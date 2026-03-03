@@ -4,6 +4,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.MalformedURLException;
@@ -62,7 +63,9 @@ public class Driver {
         }});
         try {
             String selenoidUrl = System.getenv().getOrDefault("SELENOID_URL", "http://localhost:4444/wd/hub");
-            return new RemoteWebDriver(new URL(selenoidUrl), options);
+            RemoteWebDriver remoteDriver = new RemoteWebDriver(new URL(selenoidUrl), options);
+            remoteDriver.setFileDetector(new LocalFileDetector());
+            return remoteDriver;
         } catch (MalformedURLException e) {
             throw new RuntimeException("Invalid SELENOID_URL value", e);
         }
