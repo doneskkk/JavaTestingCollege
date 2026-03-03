@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Driver {
     static public WebDriver getAutoLocalDriver() {
@@ -24,7 +25,15 @@ public class Driver {
         return new ChromeDriver(options);
     }
 
-    public static RemoteWebDriver getRemoteDriver() throws MalformedURLException {
+    public static WebDriver getDriverFromEnv() {
+        Map<String, String> env = System.getenv();
+        if ("true".equalsIgnoreCase(env.getOrDefault("USE_REMOTE_DRIVER", "false"))) {
+            return getRemoteDriver();
+        }
+        return getAutoLocalDriver();
+    }
+
+    public static RemoteWebDriver getRemoteDriver() {
         ChromeOptions options = new ChromeOptions();
         options.setCapability("browserVersion", "128.0");
         options.setCapability("selenoid:options", new HashMap<String, Object>() {{
@@ -51,7 +60,11 @@ public class Driver {
             put("noSandbox", true);
             put("headless", true);
         }});
-        RemoteWebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
-        return driver;
+        try {
+            String selenoidUrl = System.getenv().getOrDefault("SELENOID_URL", "http://localhost:4444/wd/hub");
+            return new RemoteWebDriver(new URL(selenoidUrl), options);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Invalid SELENOID_URL value", e);
+        }
     }
 }
