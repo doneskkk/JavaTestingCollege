@@ -1,7 +1,6 @@
 package org.example.utils;
 
-import io.qameta.allure.Attachment;
-import io.qameta.allure.Step;
+import io.qameta.allure.Allure;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -14,27 +13,24 @@ public class StepScreenshots {
     private StepScreenshots() {
     }
 
-    @Step("Before step: {stepName}")
     public static void before(WebDriver driver, String stepName) {
-        attach(driver, "Before - " + stepName);
+        Allure.step("Before step: " + stepName, () -> attach(driver, "Before - " + stepName));
     }
 
-    @Step("After step: {stepName}")
     public static void after(WebDriver driver, String stepName) {
-        attach(driver, "After - " + stepName);
+        Allure.step("After step: " + stepName, () -> attach(driver, "After - " + stepName));
     }
 
-    @Attachment(value = "{1}", type = "image/png")
-    public static byte[] attach(WebDriver driver, String name) {
+    public static void attach(WebDriver driver, String name) {
         if (!(driver instanceof TakesScreenshot)) {
             log.warn("Driver does not support screenshots for attachment: {}", name);
-            return new byte[0];
+            return;
         }
         try {
-            return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+            byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+            Allure.addAttachment(name, "image/png", new java.io.ByteArrayInputStream(screenshot), ".png");
         } catch (Exception e) {
             log.warn("Failed to capture screenshot: {}", name, e);
-            return new byte[0];
         }
     }
 }
