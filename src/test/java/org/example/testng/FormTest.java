@@ -7,9 +7,11 @@ import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Story;
+import io.qameta.allure.Step;
 import io.qameta.allure.testng.AllureTestNg;
 import org.example.pom.FormPom;
 import org.example.utils.Driver;
+import org.example.utils.StepScreenshots;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +62,9 @@ public class FormTest {
     @Description("Fills all fields in Practice Form, submits and verifies each value in the result modal.")
     public void formTest() {
         log.info("Opening URL: {}", URL);
+        StepScreenshots.before(driver, "Open base URL");
         driver.get(URL);
+        StepScreenshots.after(driver, "Open base URL");
         FormPom formPom = new FormPom(driver);
 
         formPom.openPracticeForm();
@@ -114,11 +118,12 @@ public class FormTest {
         }
     }
 
+    @Step("Verify submitted field {field}")
     private void assertSubmittedValue(FormPom formPom, String field, String expected) {
-        Allure.step("Verify field: " + field, () -> {
-            String actual = formPom.getSubmittedValue(field);
-            log.info("Asserting [{}]: expected='{}', actual='{}'", field, expected, actual);
-            Assert.assertEquals(actual, expected, "Mismatch for field: " + field);
-        });
+        StepScreenshots.before(driver, "Assert field: " + field);
+        String actual = formPom.getSubmittedValue(field);
+        log.info("Asserting [{}]: expected='{}', actual='{}'", field, expected, actual);
+        Assert.assertEquals(actual, expected, "Mismatch for field: " + field);
+        StepScreenshots.after(driver, "Assert field: " + field);
     }
 }

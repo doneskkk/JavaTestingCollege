@@ -13,6 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <allure.version>2.29.1</allure.version>
+    <allure.commandline.version>2.29.0</allure.commandline.version>
   </properties>
 
   <dependencies>
@@ -59,6 +60,14 @@
           <systemPropertyVariables>
             <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
           </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-maven</artifactId>
+        <version>2.12.0</version>
+        <configuration>
+          <reportVersion>${allure.commandline.version}</reportVersion>
         </configuration>
       </plugin>
     </plugins>
