@@ -58,9 +58,7 @@ jobs:
             allure generate target/allure-results --clean -o target/allure-report
           else
             mkdir -p target/allure-report
-            cat > target/allure-report/index.html <<'HTML'
-            <html><body><h2>No Allure results were generated</h2></body></html>
-            HTML
+            printf '%s\n' '<html><body><h2>No Allure results were generated</h2></body></html>' > target/allure-report/index.html
           fi
 
       - name: Check video directory
