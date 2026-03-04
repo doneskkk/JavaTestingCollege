@@ -1,5 +1,13 @@
 package org.example.testng;
 
+import io.qameta.allure.Allure;
+import io.qameta.allure.Description;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
+import io.qameta.allure.testng.AllureTestNg;
 import org.example.pom.FormPom;
 import org.example.utils.Driver;
 import org.openqa.selenium.WebDriver;
@@ -8,10 +16,14 @@ import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 
+@Listeners({AllureTestNg.class})
+@Epic("DemoQA")
+@Feature("Practice Form")
 public class FormTest {
     private static final Logger log = LoggerFactory.getLogger(FormTest.class);
 
@@ -43,6 +55,9 @@ public class FormTest {
     }
 
     @Test
+    @Story("Fill and validate all fields")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Fills all fields in Practice Form, submits and verifies each value in the result modal.")
     public void formTest() {
         log.info("Opening URL: {}", URL);
         driver.get(URL);
@@ -78,6 +93,16 @@ public class FormTest {
         assertSubmittedValue(formPom, "Address", ADDRESS);
         assertSubmittedValue(formPom, "State and City", STATE + " " + CITY);
         log.info("All form assertions passed");
+        Allure.addAttachment("Test Data Summary", "text/plain",
+                "Name: " + FIRST_NAME + " " + LAST_NAME + "\n" +
+                        "Email: " + EMAIL + "\n" +
+                        "Mobile: " + MOBILE + "\n" +
+                        "Date of birth: 01 January,2000\n" +
+                        "Subject: " + SUBJECT + "\n" +
+                        "Hobby: " + HOBBY + "\n" +
+                        "Picture: " + PICTURE_NAME + "\n" +
+                        "Address: " + ADDRESS + "\n" +
+                        "State and City: " + STATE + " " + CITY);
     }
 
     @AfterMethod
@@ -90,8 +115,10 @@ public class FormTest {
     }
 
     private void assertSubmittedValue(FormPom formPom, String field, String expected) {
-        String actual = formPom.getSubmittedValue(field);
-        log.info("Asserting [{}]: expected='{}', actual='{}'", field, expected, actual);
-        Assert.assertEquals(actual, expected, "Mismatch for field: " + field);
+        Allure.step("Verify field: " + field, () -> {
+            String actual = formPom.getSubmittedValue(field);
+            log.info("Asserting [{}]: expected='{}', actual='{}'", field, expected, actual);
+            Assert.assertEquals(actual, expected, "Mismatch for field: " + field);
+        });
     }
 }
