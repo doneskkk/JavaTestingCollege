@@ -8,10 +8,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
 public class FormPom {
+    private static final Logger log = LoggerFactory.getLogger(FormPom.class);
 
     private final WebDriver driver;
     private final JavascriptExecutor js;
@@ -40,6 +43,7 @@ public class FormPom {
     }
 
     public void openPracticeForm() {
+        log.info("Opening Practice Form");
         wait.until(ExpectedConditions.elementToBeClickable(formsCard)).click();
         wait.until(ExpectedConditions.elementToBeClickable(practiceFormMenu)).click();
         closeAdvert();
@@ -58,6 +62,7 @@ public class FormPom {
     }
 
     public void setGender(String gender) {
+        log.info("Setting gender: {}", gender);
         By genderLocator = By.xpath("//*[@id='genterWrapper']//label[text()='" + gender + "']");
         wait.until(ExpectedConditions.elementToBeClickable(genderLocator)).click();
     }
@@ -67,6 +72,7 @@ public class FormPom {
     }
 
     public void setDateOfBirth(int day, String month, String year) {
+        log.info("Setting date of birth: {} {} {}", day, month, year);
         wait.until(ExpectedConditions.elementToBeClickable(dateOfBirthInput)).click();
         new Select(wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("react-datepicker__month-select"))))
                 .selectByVisibleText(month);
@@ -78,17 +84,20 @@ public class FormPom {
     }
 
     public void setSubject(String subject) {
+        log.info("Adding subject: {}", subject);
         WebElement input = wait.until(ExpectedConditions.elementToBeClickable(subjectsInput));
         input.sendKeys(subject);
         input.sendKeys(Keys.ENTER);
     }
 
     public void setHobby(String hobby) {
+        log.info("Selecting hobby: {}", hobby);
         By hobbyLocator = By.xpath("//*[@id='hobbiesWrapper']//label[text()='" + hobby + "']");
         wait.until(ExpectedConditions.elementToBeClickable(hobbyLocator)).click();
     }
 
     public void uploadPicture(String absolutePath) {
+        log.info("Uploading picture from path: {}", absolutePath);
         wait.until(ExpectedConditions.presenceOfElementLocated(uploadPicture)).sendKeys(absolutePath);
     }
 
@@ -97,6 +106,7 @@ public class FormPom {
     }
 
     public void setStateAndCity(String state, String city) {
+        log.info("Setting state and city: {} / {}", state, city);
         wait.until(ExpectedConditions.elementToBeClickable(stateContainer)).click();
         WebElement stateInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("react-select-3-input")));
         stateInput.sendKeys(state);
@@ -109,15 +119,19 @@ public class FormPom {
     }
 
     public void submit() {
+        log.info("Submitting form");
         WebElement button = wait.until(ExpectedConditions.elementToBeClickable(submitButton));
         js.executeScript("arguments[0].scrollIntoView({block: 'center'});", button);
         button.click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(modalTitle));
+        log.info("Submission modal is visible");
     }
 
     public String getSubmittedValue(String label) {
         By valueLocator = By.xpath("//td[text()='" + label + "']/following-sibling::td");
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(valueLocator)).getText().trim();
+        String value = wait.until(ExpectedConditions.visibilityOfElementLocated(valueLocator)).getText().trim();
+        log.info("Submitted value [{}] = {}", label, value);
+        return value;
     }
 
     public void closeAdvert() {

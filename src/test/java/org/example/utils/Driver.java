@@ -6,6 +6,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,7 +16,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Driver {
+    private static final Logger log = LoggerFactory.getLogger(Driver.class);
+
     static public WebDriver getAutoLocalDriver() {
+        log.info("Starting local ChromeDriver via WebDriverManager");
         WebDriverManager.chromedriver().setup(); // sets up ChromeDriver automatically
         return new ChromeDriver();
     }
@@ -29,12 +34,16 @@ public class Driver {
     public static WebDriver getDriverFromEnv() {
         Map<String, String> env = System.getenv();
         if ("true".equalsIgnoreCase(env.getOrDefault("USE_REMOTE_DRIVER", "false"))) {
+            log.info("USE_REMOTE_DRIVER=true, using remote driver");
             return getRemoteDriver();
         }
+        log.info("USE_REMOTE_DRIVER is false or not set, using local driver");
         return getAutoLocalDriver();
     }
 
     public static RemoteWebDriver getRemoteDriver() {
+        String selenoidUrl = System.getenv().getOrDefault("SELENOID_URL", "http://localhost:4444/wd/hub");
+        log.info("Initializing remote ChromeDriver for Selenoid URL: {}", selenoidUrl);
         ChromeOptions options = new ChromeOptions();
         options.setCapability("browserVersion", "128.0");
         options.setCapability("selenoid:options", new HashMap<String, Object>() {{
@@ -62,11 +71,12 @@ public class Driver {
             put("headless", true);
         }});
         try {
-            String selenoidUrl = System.getenv().getOrDefault("SELENOID_URL", "http://localhost:4444/wd/hub");
             RemoteWebDriver remoteDriver = new RemoteWebDriver(new URL(selenoidUrl), options);
             remoteDriver.setFileDetector(new LocalFileDetector());
+            log.info("Remote driver session started: {}", remoteDriver.getSessionId());
             return remoteDriver;
         } catch (MalformedURLException e) {
+            log.error("Invalid SELENOID_URL value: {}", selenoidUrl, e);
             throw new RuntimeException("Invalid SELENOID_URL value", e);
         }
     }

@@ -3,6 +3,8 @@ package org.example.testng;
 import org.example.pom.FormPom;
 import org.example.utils.Driver;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -11,6 +13,7 @@ import org.testng.annotations.Test;
 import java.nio.file.Path;
 
 public class FormTest {
+    private static final Logger log = LoggerFactory.getLogger(FormTest.class);
 
     static public WebDriver driver;
     static public String URL = "https://demoqa.com/";
@@ -33,12 +36,15 @@ public class FormTest {
 
     @BeforeMethod
     public void beforeMethod() {
+        log.info("Starting test setup");
         driver = Driver.getDriverFromEnv();
         driver.manage().window().maximize();
+        log.info("Driver initialized and window maximized");
     }
 
     @Test
     public void formTest() {
+        log.info("Opening URL: {}", URL);
         driver.get(URL);
         FormPom formPom = new FormPom(driver);
 
@@ -61,22 +67,31 @@ public class FormTest {
         formPom.setStateAndCity(STATE, CITY);
         formPom.submit();
 
-        Assert.assertEquals(formPom.getSubmittedValue("Student Name"), FIRST_NAME + " " + LAST_NAME);
-        Assert.assertEquals(formPom.getSubmittedValue("Student Email"), EMAIL);
-        Assert.assertEquals(formPom.getSubmittedValue("Gender"), GENDER);
-        Assert.assertEquals(formPom.getSubmittedValue("Mobile"), MOBILE);
-        Assert.assertEquals(formPom.getSubmittedValue("Date of Birth"), "01 January,2000");
-        Assert.assertEquals(formPom.getSubmittedValue("Subjects"), SUBJECT);
-        Assert.assertEquals(formPom.getSubmittedValue("Hobbies"), HOBBY);
-        Assert.assertEquals(formPom.getSubmittedValue("Picture"), PICTURE_NAME);
-        Assert.assertEquals(formPom.getSubmittedValue("Address"), ADDRESS);
-        Assert.assertEquals(formPom.getSubmittedValue("State and City"), STATE + " " + CITY);
+        assertSubmittedValue(formPom, "Student Name", FIRST_NAME + " " + LAST_NAME);
+        assertSubmittedValue(formPom, "Student Email", EMAIL);
+        assertSubmittedValue(formPom, "Gender", GENDER);
+        assertSubmittedValue(formPom, "Mobile", MOBILE);
+        assertSubmittedValue(formPom, "Date of Birth", "01 January,2000");
+        assertSubmittedValue(formPom, "Subjects", SUBJECT);
+        assertSubmittedValue(formPom, "Hobbies", HOBBY);
+        assertSubmittedValue(formPom, "Picture", PICTURE_NAME);
+        assertSubmittedValue(formPom, "Address", ADDRESS);
+        assertSubmittedValue(formPom, "State and City", STATE + " " + CITY);
+        log.info("All form assertions passed");
     }
 
     @AfterMethod
     public void afterMethod() {
         if (driver != null) {
+            log.info("Closing driver");
             driver.quit();
+            log.info("Driver closed");
         }
+    }
+
+    private void assertSubmittedValue(FormPom formPom, String field, String expected) {
+        String actual = formPom.getSubmittedValue(field);
+        log.info("Asserting [{}]: expected='{}', actual='{}'", field, expected, actual);
+        Assert.assertEquals(actual, expected, "Mismatch for field: " + field);
     }
 }
